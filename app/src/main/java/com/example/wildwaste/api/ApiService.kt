@@ -2,6 +2,7 @@ package com.example.wildwaste.api
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -21,4 +22,7 @@ interface ApiService {
 
     @GET("reports/user/{user_id}")
     suspend fun getUserReports(@Path("user_id") userId: Int): Response<AllReportsResponse>
+
+    @DELETE("reports/{report_id}")
+    suspend fun deleteReport(@Path("report_id") reportId: Int): Response<GenericResponse>
 }

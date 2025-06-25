@@ -17,18 +17,15 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.util.Base64
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.views.overlay.MapEventsOverlay
-import java.io.ByteArrayOutputStream
 import com.example.wildwaste.api.TrashReport
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
@@ -39,8 +36,6 @@ fun MapScreen(
 ) {
     val context = LocalContext.current
     val uiState by mapViewModel.uiState.collectAsState()
-    var selectedGeoPoint by remember { mutableStateOf<GeoPoint?>(null) }
-    var showBottomSheet by remember { mutableStateOf(false) }
 
     // State for the new report submission flow
     var newReportGeoPoint by remember { mutableStateOf<GeoPoint?>(null) }
@@ -63,7 +58,7 @@ fun MapScreen(
     LaunchedEffect(uiState.submissionSuccess) {
         if (uiState.submissionSuccess) {
             Toast.makeText(context, "Report Submitted Successfully!", Toast.LENGTH_SHORT).show()
-            showBottomSheet = false
+            showSubmissionSheet = false
             mapViewModel.consumedSubmissionEvent()
         }
     }
@@ -134,11 +129,40 @@ fun MapScreen(
                     mapView.invalidate()
                 }
             )
+
+            FloatingActionButton(
+                onClick = {
+                    Toast.makeText(context, "Refreshing reports...", Toast.LENGTH_SHORT).show()
+                    mapViewModel.fetchAllReports()
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .size(32.dp)
+            ) {
+                Icon(Icons.Filled.Refresh, contentDescription = "Refresh Reports")
+            }
         }
 
         // --- Bottom Sheet for NEW report submission ---
         if (showSubmissionSheet) {
-            ModalBottomSheet(onDismissRequest = { showSubmissionSheet = false }) {
+            val modalBottomSheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = true,
+                confirmValueChange = {
+                    if (!showSubmissionSheet) {
+                        false
+                    }
+                    else {
+                        true
+                    }
+                }
+            )
+
+            ModalBottomSheet(
+                sheetState = modalBottomSheetState,
+                onDismissRequest = { showSubmissionSheet = false },
+                modifier = Modifier.height(610.dp)
+            ) {
                 ReportSubmissionSheet(
                     geoPoint = newReportGeoPoint!!,
                     userId = userId,

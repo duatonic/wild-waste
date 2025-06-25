@@ -3,6 +3,7 @@ package com.example.wildwaste.ui.screens
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -13,17 +14,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.wildwaste.api.TrashReport
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun ReportHistoryItem(report: TrashReport) {
+fun ReportHistoryItem(
+    report: TrashReport,
+    onClick: () -> Unit
+) {
     // Function to format the date string
     val formattedDate = remember(report.reportedAt) {
         try {
@@ -46,20 +52,33 @@ fun ReportHistoryItem(report: TrashReport) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        onClick = onClick
     ) {
         Row(modifier = Modifier.padding(12.dp)) {
-            decodedImage?.let {
+            if (decodedImage != null) {
                 Image(
-                    bitmap = it.asImageBitmap(),
+                    bitmap = decodedImage.asImageBitmap(),
                     contentDescription = "Trash image",
                     modifier = Modifier
                         .size(90.dp)
                         .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.width(16.dp))
             }
+            else {
+                Text(
+                    text = "Image not available",
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.Gray),
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = report.trashType,

@@ -1,9 +1,11 @@
 package com.example.wildwaste.api
 
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
     // IMPORTANT: Use 10.0.2.2 for the Android emulator. If testing on a real device,
@@ -16,6 +18,10 @@ object RetrofitInstance {
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(logging)
+        .connectionPool(ConnectionPool(5, 5, TimeUnit.MINUTES))
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
     val api: ApiService by lazy {

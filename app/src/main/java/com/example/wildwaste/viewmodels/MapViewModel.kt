@@ -3,9 +3,11 @@ package com.example.wildwaste.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wildwaste.api.ApiService
+import com.example.wildwaste.api.GenericResponse
 import com.example.wildwaste.api.RetrofitInstance
 import com.example.wildwaste.api.TrashReport
 import com.example.wildwaste.api.TrashReportRequest
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -37,9 +39,21 @@ class MapViewModel : ViewModel() {
                         reports = response.body()?.data ?: emptyList()
                     )
                 } else {
-                    // IMPORTANT THIS WAS SUPPOSED TO BE response.body()?.message but message is not in getAllReports Data Model (AllReportsResponse)
-                    val errorMessage = response.body()?.data ?: "Failed to fetch reports"
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to fetch reports")
+                    var errorMessage = ""
+                    if (!response.isSuccessful) {
+                        val errorBody = response.errorBody()?.string()
+                        if (errorBody != null) {
+                            try {
+                                // Use the existing GenericResponse model to parse the error
+                                val errorResponse = Gson().fromJson(errorBody, GenericResponse::class.java)
+                                errorMessage = errorResponse.message
+                            } catch (e: Exception) {
+                                // Parsing failed, use the default message
+                                errorMessage = "Failed to fetch reports"
+                            }
+                        }
+                    }
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = errorMessage)
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = "Connection error: ${e.message}")
@@ -54,7 +68,6 @@ class MapViewModel : ViewModel() {
                 val response = apiService.submitReport(reportRequest)
                 if (response.isSuccessful && response.body()?.status == "success") {
                     _uiState.value = _uiState.value.copy(isLoading = false, submissionSuccess = true)
-                    // Refresh the reports on the map
                     fetchAllReports()
                 } else {
                     val errorMessage = response.body()?.message ?: "Failed to submit report"
