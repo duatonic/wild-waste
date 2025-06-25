@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import com.example.wildwaste.R
 
 // --- User Data Class ---
-// The User data class now holds all relevant, non-hardcoded info.
 data class User(
     val id: Int,
     val name: String,
@@ -38,22 +37,39 @@ data class User(
 )
 
 // --- Updated Data Fetcher ---
-// This function now takes the username as a parameter.
 fun getUpdatedUser(userId: Int, username: String): User {
     return User(
         id = userId,
-        name = username, // The name is now dynamic
-        memberSince = "June 2025", // This remains hardcoded for now as requested
+        name = username,
+        memberSince = "June 2025",
         avatarResId = R.drawable.ic_avatar_placeholder
     )
 }
 
-
 @Composable
-fun AccountScreen(userId: Int, username: String) { // The username is now passed in
-    // The user object is created with the dynamic username
+fun AccountScreen(
+    userId: Int,
+    username: String,
+    onLogoutClicked: () -> Unit // CHANGE 1: Add a callback for logout
+) {
     val user = remember(userId, username) { getUpdatedUser(userId, username) }
     var notificationsEnabled by remember { mutableStateOf(true) }
+
+    // CHANGE 2: State to control the visibility of the logout confirmation dialog
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    // CHANGE 3: Show the dialog when the state is true
+    if (showLogoutDialog) {
+        LogoutConfirmationDialog(
+            onConfirmLogout = {
+                showLogoutDialog = false
+                onLogoutClicked() // Execute the logout logic
+            },
+            onDismiss = {
+                showLogoutDialog = false
+            }
+        )
+    }
 
     Surface(color = MaterialTheme.colorScheme.background) {
         Column(
@@ -61,7 +77,7 @@ fun AccountScreen(userId: Int, username: String) { // The username is now passed
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            ProfileHeader(user = user) // The header will now display the dynamic name
+            ProfileHeader(user = user)
             Spacer(modifier = Modifier.height(24.dp))
 
             SectionTitle(title = "Account")
@@ -74,7 +90,8 @@ fun AccountScreen(userId: Int, username: String) { // The username is now passed
                 icon = Icons.AutoMirrored.Filled.ExitToApp,
                 title = "Logout",
                 isLogout = true,
-                onClick = { /* TODO: Implement logout logic and navigate to login */ }
+                // CHANGE 4: Clicking logout now shows the confirmation dialog
+                onClick = { showLogoutDialog = true }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -88,6 +105,33 @@ fun AccountScreen(userId: Int, username: String) { // The username is now passed
         }
     }
 }
+
+// CHANGE 5: New composable for the confirmation dialog
+@Composable
+fun LogoutConfirmationDialog(
+    onConfirmLogout: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Confirm Logout") },
+        text = { Text("Are you sure you want to log out?") },
+        confirmButton = {
+            Button(
+                onClick = onConfirmLogout,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Logout")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
 
 @Composable
 fun ProfileHeader(user: User) {
@@ -109,7 +153,7 @@ fun ProfileHeader(user: User) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = user.name, // Displays the dynamic name
+            text = user.name,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -122,7 +166,7 @@ fun ProfileHeader(user: User) {
     }
 }
 
-// The other composables (SectionTitle, AccountOptionItem, etc.) remain unchanged.
+// Other composables remain unchanged...
 
 @Composable
 fun SectionTitle(title: String) {
@@ -203,9 +247,3 @@ fun SettingSwitchItem(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun AccountScreenPreview() {
-    // Preview now includes a sample username
-    AccountScreen(userId = 123, username = "Rizky Pratama")
-}

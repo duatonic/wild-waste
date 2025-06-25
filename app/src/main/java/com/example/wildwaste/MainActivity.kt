@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -43,8 +44,14 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 }
 
 @Composable
-fun MainScreen(userId: Int, username: String) { // CHANGE 1: Accept username
-    val navController = rememberNavController()
+fun MainScreen(
+    userId: Int,
+    username: String,
+    authViewModel: AuthViewModel, // CHANGE 1: Accept the ViewModel
+    appNavController: NavHostController // CHANGE 2: Accept the main NavController
+) {
+    // This NavController is for the bottom bar navigation (Map, History, Account)
+    val bottomBarNavController = rememberNavController()
     val bottomNavItems = listOf(BottomNavItem.Map, BottomNavItem.History, BottomNavItem.Account)
 
     val gradientBrush = Brush.horizontalGradient(
@@ -63,7 +70,7 @@ fun MainScreen(userId: Int, username: String) { // CHANGE 1: Accept username
                     containerColor = Color.Transparent,
                     tonalElevation = 0.dp
                 ) {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val navBackStackEntry by bottomBarNavController.currentBackStackEntryAsState()
                     val currentDestination = navBackStackEntry?.destination
 
                     bottomNavItems.forEach { screen ->
@@ -72,8 +79,8 @@ fun MainScreen(userId: Int, username: String) { // CHANGE 1: Accept username
                             label = { Text(screen.label) },
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                             onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
+                                bottomBarNavController.navigate(screen.route) {
+                                    popUpTo(bottomBarNavController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
                                     launchSingleTop = true
@@ -94,14 +101,33 @@ fun MainScreen(userId: Int, username: String) { // CHANGE 1: Accept username
         }
     ) { innerPadding ->
         NavHost(
-            navController = navController,
+            navController = bottomBarNavController, // Use the dedicated bottom bar controller
             startDestination = BottomNavItem.Map.route,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(BottomNavItem.Map.route) { MapScreen(userId = userId) }
             composable(BottomNavItem.History.route) { HistoryScreen(userId = userId) }
-            // CHANGE 2: Pass username to AccountScreen
-            composable(BottomNavItem.Account.route) { AccountScreen(userId = userId, username = username) }
+            composable(BottomNavItem.Account.route) {
+                // CHANGE 3: Provide the onLogoutClicked lambda
+                AccountScreen(
+                    userId = userId,
+                    username = username,
+                    onLogoutClicked = {
+                        // Call a method on your ViewModel to clear user session/state
+                        authViewModel.logout()
+
+                        // Use the main NavController to navigate back to the login screen
+                        appNavController.navigate("login") {
+                            // Pop the entire back stack up to the start destination
+                            popUpTo(0) {
+                                inclusive = true
+                            }
+                            // Avoid multiple copies of login screen
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -126,9 +152,7 @@ fun AppNavigation() {
         composable("login") {
             LoginScreen(
                 authViewModel = authViewModel,
-                // CHANGE 3: The success callback now provides username
                 onLoginSuccess = { userId, username ->
-                    // CHANGE 4: Navigate with both userId and username
                     navController.navigate("main/$userId/$username") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -148,21 +172,23 @@ fun AppNavigation() {
             )
         }
         composable(
-            // CHANGE 5: Update the route to accept username
             route = "main/{userId}/{username}",
-            // CHANGE 6: Add navArgument for username
             arguments = listOf(
                 navArgument("userId") { type = NavType.IntType },
                 navArgument("username") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            // CHANGE 7: Extract username from arguments
             val userId = backStackEntry.arguments?.getInt("userId")
             val username = backStackEntry.arguments?.getString("username")
 
             if (userId != null && username != null) {
-                // CHANGE 8: Pass both userId and username to MainScreen
-                MainScreen(userId = userId, username = username)
+                // CHANGE 4: Pass the main NavController and ViewModel down to MainScreen
+                MainScreen(
+                    userId = userId,
+                    username = username,
+                    authViewModel = authViewModel,
+                    appNavController = navController
+                )
             } else {
                 navController.popBackStack()
             }
