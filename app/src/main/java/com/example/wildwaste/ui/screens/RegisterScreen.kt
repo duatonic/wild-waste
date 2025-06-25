@@ -33,15 +33,16 @@ fun RegisterScreen(
     val uiState by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // --- NEW: Define the same green gradient ---
+    // --- PERUBAHAN DI SINI ---
+    // Menerapkan gradien tiga warna yang konsisten dengan tema aplikasi
     val gradientColors = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF4DB6AC), // A medium Teal Green
-            Color(0xFFA5D6A7)  // A light, complementary Green
+            Color(0xFF2D6A44), // Hijau paling gelap
+            Color(0xFF4B8E5A), // Hijau pertengahan
+            Color(0xFF5CA46C)  // Hijau paling terang
         )
     )
 
-    // Effect to handle navigation and toasts (no changes here)
     LaunchedEffect(key1 = uiState) {
         if (uiState.registrationSuccess) {
             Toast.makeText(context, "Registration Successful! Please log in.", Toast.LENGTH_LONG).show()
@@ -54,11 +55,10 @@ fun RegisterScreen(
         }
     }
 
-    // --- CHANGED: Apply gradient background to the main container ---
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = gradientColors) // <-- APPLY GRADIENT
+            .background(brush = gradientColors) // Menerapkan gradien baru
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -70,7 +70,6 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // --- CHANGED: Updated text color for contrast ---
         Text(
             text = "Create an Account",
             style = MaterialTheme.typography.headlineLarge.copy(
@@ -80,7 +79,6 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- CHANGED: Styled all TextFields to match the login screen ---
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
@@ -136,21 +134,19 @@ fun RegisterScreen(
                 focusedLabelColor = Color.White,
                 unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
                 cursorColor = Color.White,
-                errorContainerColor = Color.White.copy(alpha = 0.3f) // Keep bg color on error
+                errorContainerColor = Color.White.copy(alpha = 0.3f)
             )
         )
         if (password != confirmPassword) {
-            // --- CHANGED: Made error text color more visible on the gradient ---
             Text(
                 "Passwords do not match",
-                color = Color(0xFFB00020), // A strong, visible red
+                color = Color(0xFFD32F2F), // Merah yang lebih kontras
                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- CHANGED: Styled ProgressIndicator and Button ---
         if (uiState.isLoading) {
             CircularProgressIndicator(color = Color.White)
         } else {
@@ -161,7 +157,7 @@ fun RegisterScreen(
                     .height(50.dp),
                 enabled = username.isNotBlank() && password.isNotBlank() && password == confirmPassword,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00796B) // Dark Teal accent
+                    containerColor = Color(0xFF004D40) // Hijau sangat tua sebagai aksen
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {

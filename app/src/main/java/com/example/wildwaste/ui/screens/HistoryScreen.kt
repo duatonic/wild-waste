@@ -2,6 +2,7 @@ package com.example.wildwaste.ui.screens
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,7 +12,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -50,11 +54,26 @@ fun HistoryScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("My Report History") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            // PERUBAHAN UTAMA DI SINI
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "My Report History",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                modifier = Modifier.background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF2D6A44), // Hijau paling gelap
+                            Color(0xFF4B8E5A), // Hijau pertengahan
+                            Color(0xFF5CA46C)  // Hijau paling terang
+                        )
+                    )
+                ),
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = Color.White
                 )
             )
         }
@@ -98,9 +117,6 @@ fun HistoryScreen(
                                 onClick = { selectedReport = report }
                             )
                         }
-//                        if (uiState.isLoading) { // Show refresh indicator at top
-//                            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-//                        }
                     }
                 }
             }

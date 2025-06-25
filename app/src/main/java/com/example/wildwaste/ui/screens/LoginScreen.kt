@@ -24,7 +24,6 @@ import com.example.wildwaste.viewmodels.AuthViewModel
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
-    // CHANGE 1: Update the function signature to accept username as well.
     onLoginSuccess: (userId: Int, username: String) -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
@@ -33,10 +32,13 @@ fun LoginScreen(
     val uiState by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // --- PERUBAHAN DI SINI ---
+    // Menggunakan tiga warna gradien baru untuk kedalaman visual yang lebih baik
     val gradientColors = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF4DB6AC),
-            Color(0xFFA5D6A7)
+            Color(0xFF2D6A44), // Hijau paling gelap
+            Color(0xFF4B8E5A), // Hijau pertengahan
+            Color(0xFF5CA46C)  // Hijau paling terang
         )
     )
 
@@ -45,7 +47,6 @@ fun LoginScreen(
             Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
             val userId = uiState.loggedInUserId
             if (userId != null) {
-                // CHANGE 2: Call onLoginSuccess with both the userId and the username from the state.
                 onLoginSuccess(userId, username)
             } else {
                 Toast.makeText(context, "Could not retrieve user ID.", Toast.LENGTH_LONG).show()
@@ -61,7 +62,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = gradientColors)
+            .background(brush = gradientColors) // Menerapkan gradien baru
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -136,7 +137,8 @@ fun LoginScreen(
                     .height(50.dp),
                 enabled = username.isNotBlank() && password.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00796B)
+                    // Warna tombol sedikit disesuaikan agar cocok dengan gradien baru
+                    containerColor = Color(0xFF004D40)
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {

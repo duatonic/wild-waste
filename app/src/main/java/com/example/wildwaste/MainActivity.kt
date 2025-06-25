@@ -50,15 +50,18 @@ fun MainScreen(
     username: String,
     authViewModel: AuthViewModel,
     appNavController: NavHostController,
-    themeViewModel: ThemeViewModel // CHANGE 1: Accept the ThemeViewModel
+    themeViewModel: ThemeViewModel
 ) {
     val bottomBarNavController = rememberNavController()
     val bottomNavItems = listOf(BottomNavItem.Map, BottomNavItem.History, BottomNavItem.Account)
 
-    val gradientBrush = Brush.horizontalGradient(
+    // --- PERUBAHAN DI SINI ---
+    // Menerapkan gradien tiga warna yang sama seperti di halaman login
+    val gradientBrush = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF4DB6AC),
-            Color(0xFFA5D6A7)
+            Color(0xFF2D6A44), // Hijau paling gelap
+            Color(0xFF4B8E5A), // Hijau pertengahan
+            Color(0xFF5CA46C)  // Hijau paling terang
         )
     )
 
@@ -112,7 +115,7 @@ fun MainScreen(
                 AccountScreen(
                     userId = userId,
                     username = username,
-                    themeViewModel = themeViewModel, // CHANGE 2: Pass ThemeViewModel down to AccountScreen
+                    themeViewModel = themeViewModel,
                     onLogoutClicked = {
                         authViewModel.logout()
                         appNavController.navigate("login") {
@@ -130,9 +133,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // CHANGE 3: Instantiate the ThemeViewModel at the top level
             val themeViewModel: ThemeViewModel = viewModel()
-            // CHANGE 4: Wrap the entire app in WildWasteTheme, providing the dark mode state
             WildWasteTheme(darkTheme = themeViewModel.isDarkMode.value) {
                 AppNavigation(themeViewModel = themeViewModel)
             }
@@ -141,7 +142,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(themeViewModel: ThemeViewModel) { // CHANGE 5: Accept the ThemeViewModel
+fun AppNavigation(themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
 
@@ -179,7 +180,6 @@ fun AppNavigation(themeViewModel: ThemeViewModel) { // CHANGE 5: Accept the Them
             val username = backStackEntry.arguments?.getString("username")
 
             if (userId != null && username != null) {
-                // CHANGE 6: Pass all necessary ViewModels and NavController to MainScreen
                 MainScreen(
                     userId = userId,
                     username = username,
