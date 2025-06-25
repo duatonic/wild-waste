@@ -92,6 +92,7 @@ dependencies {
 
     // ForAccompanist (Permissions) - if needed for location
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    implementation("androidx.compose.material:material-icons-extended-android")
 
 
 

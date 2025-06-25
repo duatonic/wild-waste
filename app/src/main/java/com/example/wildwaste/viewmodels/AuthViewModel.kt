@@ -15,7 +15,8 @@ data class AuthUiState(
     val error: String? = null,
     val registrationSuccess: Boolean = false,
     val loginSuccess: Boolean = false,
-    val loggedInUserId: Int? = null
+    // THE FIX IS APPLIED HERE:
+    val loggedInUserId: Int? = null // Changed 'nil' to 'null'
 )
 
 class AuthViewModel : ViewModel() {
@@ -63,6 +64,11 @@ class AuthViewModel : ViewModel() {
 
     // Used to reset the state after a navigation event
     fun consumedEvents() {
+        _uiState.value = AuthUiState()
+    }
+
+    // This function resets the state to log the user out
+    fun logout() {
         _uiState.value = AuthUiState()
     }
 }

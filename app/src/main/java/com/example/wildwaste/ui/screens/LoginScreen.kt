@@ -1,24 +1,31 @@
 package com.example.wildwaste.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.LaunchedEffect
+import com.example.wildwaste.R
 import com.example.wildwaste.viewmodels.AuthViewModel
 
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
-    onLoginSuccess: (userId: Int) -> Unit,
+    // CHANGE 1: Update the function signature to accept username as well.
+    onLoginSuccess: (userId: Int, username: String) -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
     var username by remember { mutableStateOf("") }
@@ -26,41 +33,76 @@ fun LoginScreen(
     val uiState by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Effect to handle navigation and toasts
+    val gradientColors = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF4DB6AC),
+            Color(0xFFA5D6A7)
+        )
+    )
+
     LaunchedEffect(key1 = uiState) {
         if (uiState.loginSuccess) {
             Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
             val userId = uiState.loggedInUserId
             if (userId != null) {
-                onLoginSuccess(userId) // <-- Pass the user ID
+                // CHANGE 2: Call onLoginSuccess with both the userId and the username from the state.
+                onLoginSuccess(userId, username)
             } else {
                 Toast.makeText(context, "Could not retrieve user ID.", Toast.LENGTH_LONG).show()
             }
-            authViewModel.consumedEvents() // Reset state
+            authViewModel.consumedEvents()
         }
         uiState.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-            authViewModel.consumedEvents() // Reset state
+            authViewModel.consumedEvents()
         }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(brush = gradientColors)
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("WildWaste", style = MaterialTheme.typography.headlineLarge)
+        Image(
+            painter = painterResource(id = R.drawable.ic_wildwaste_logo),
+            contentDescription = "WildWaste Logo",
+            modifier = Modifier.size(200.dp)
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Welcome Back", style = MaterialTheme.typography.bodyLarge)
+
+        Text(
+            text = "WildWaste",
+            style = MaterialTheme.typography.headlineLarge.copy(
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "Welcome Back",
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.White.copy(alpha = 0.8f)
+        )
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White.copy(alpha = 0.3f),
+                unfocusedContainerColor = Color.White.copy(alpha = 0.3f),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedLabelColor = Color.White,
+                unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                cursorColor = Color.White
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -70,24 +112,40 @@ fun LoginScreen(
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White.copy(alpha = 0.3f),
+                unfocusedContainerColor = Color.White.copy(alpha = 0.3f),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedLabelColor = Color.White,
+                unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                cursorColor = Color.White
+            )
         )
         Spacer(modifier = Modifier.height(32.dp))
 
         if (uiState.isLoading) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(color = Color.White)
         } else {
             Button(
                 onClick = { authViewModel.login(username, password) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = username.isNotBlank() && password.isNotBlank()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = username.isNotBlank() && password.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF00796B)
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Login")
+                Text("Login", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
             }
         }
 
         TextButton(onClick = onNavigateToRegister) {
-            Text("Don't have an account? Sign Up")
+            Text("Don't have an account? Sign Up", color = Color.White)
         }
     }
 }
