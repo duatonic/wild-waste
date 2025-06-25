@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <domain-config cleartextTrafficPermitted="true">
+        <!--
+        IMPORTANT: Replace 10.0.2.2 with your computer's IP address on the local network
+        if you are testing on a physical Android device. 10.0.2.2 is an alias for your
+        computer's localhost when running in the Android Emulator.
+        -->
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>
