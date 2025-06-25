@@ -24,7 +24,8 @@ import com.example.wildwaste.viewmodels.AuthViewModel
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
-    onLoginSuccess: (userId: Int) -> Unit,
+    // CHANGE 1: Update the function signature to accept username as well.
+    onLoginSuccess: (userId: Int, username: String) -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
     var username by remember { mutableStateOf("") }
@@ -32,21 +33,20 @@ fun LoginScreen(
     val uiState by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // --- CHANGED: New green gradient colors ---
     val gradientColors = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF4DB6AC), // A medium Teal Green
-            Color(0xFFA5D6A7)  // A light, complementary Green
+            Color(0xFF4DB6AC),
+            Color(0xFFA5D6A7)
         )
     )
 
-    // Effect to handle navigation and toasts (no changes here)
     LaunchedEffect(key1 = uiState) {
         if (uiState.loginSuccess) {
             Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
             val userId = uiState.loggedInUserId
             if (userId != null) {
-                onLoginSuccess(userId)
+                // CHANGE 2: Call onLoginSuccess with both the userId and the username from the state.
+                onLoginSuccess(userId, username)
             } else {
                 Toast.makeText(context, "Could not retrieve user ID.", Toast.LENGTH_LONG).show()
             }
@@ -61,7 +61,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = gradientColors) // <-- APPLY NEW GRADIENT
+            .background(brush = gradientColors)
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -136,7 +136,7 @@ fun LoginScreen(
                     .height(50.dp),
                 enabled = username.isNotBlank() && password.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00796B) // Dark Teal still works great as an accent
+                    containerColor = Color(0xFF00796B)
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
