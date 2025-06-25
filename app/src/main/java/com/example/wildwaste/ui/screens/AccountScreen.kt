@@ -10,9 +10,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,8 +24,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wildwaste.R
+import com.example.wildwaste.viewmodels.ThemeViewModel
 
 // --- User Data Class ---
 data class User(
@@ -50,20 +50,19 @@ fun getUpdatedUser(userId: Int, username: String): User {
 fun AccountScreen(
     userId: Int,
     username: String,
-    onLogoutClicked: () -> Unit // CHANGE 1: Add a callback for logout
+    themeViewModel: ThemeViewModel,
+    onLogoutClicked: () -> Unit
 ) {
     val user = remember(userId, username) { getUpdatedUser(userId, username) }
-    var notificationsEnabled by remember { mutableStateOf(true) }
-
-    // CHANGE 2: State to control the visibility of the logout confirmation dialog
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    // CHANGE 3: Show the dialog when the state is true
+    val isDarkMode by themeViewModel.isDarkMode
+
     if (showLogoutDialog) {
         LogoutConfirmationDialog(
             onConfirmLogout = {
                 showLogoutDialog = false
-                onLogoutClicked() // Execute the logout logic
+                onLogoutClicked()
             },
             onDismiss = {
                 showLogoutDialog = false
@@ -90,23 +89,23 @@ fun AccountScreen(
                 icon = Icons.AutoMirrored.Filled.ExitToApp,
                 title = "Logout",
                 isLogout = true,
-                // CHANGE 4: Clicking logout now shows the confirmation dialog
                 onClick = { showLogoutDialog = true }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-            SectionTitle(title = "Settings")
+            SectionTitle(title = "Appearance")
+
             SettingSwitchItem(
-                icon = Icons.Default.Notifications,
-                title = "Push Notifications",
-                isChecked = notificationsEnabled,
-                onCheckedChange = { notificationsEnabled = it }
+                // ERROR 2 FIX: Use Icons.Filled for DarkMode
+                icon = Icons.Filled.DarkMode,
+                title = "Dark Mode",
+                isChecked = isDarkMode,
+                onCheckedChange = { themeViewModel.toggleTheme() }
             )
         }
     }
 }
 
-// CHANGE 5: New composable for the confirmation dialog
 @Composable
 fun LogoutConfirmationDialog(
     onConfirmLogout: () -> Unit,
@@ -165,8 +164,6 @@ fun ProfileHeader(user: User) {
         )
     }
 }
-
-// Other composables remain unchanged...
 
 @Composable
 fun SectionTitle(title: String) {
@@ -247,3 +244,15 @@ fun SettingSwitchItem(
 }
 
 
+@Preview(showBackground = true)
+@Composable
+fun AccountScreenPreview() {
+    // ERROR 1 FIX: Use viewModel() to get a ViewModel instance for the preview
+    val themeViewModel: ThemeViewModel = viewModel()
+    AccountScreen(
+        userId = 123,
+        username = "Rizky Pratama",
+        themeViewModel = themeViewModel,
+        onLogoutClicked = {}
+    )
+}

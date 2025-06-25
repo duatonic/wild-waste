@@ -19,9 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,6 +35,7 @@ import com.example.wildwaste.ui.screens.MapScreen
 import com.example.wildwaste.ui.screens.RegisterScreen
 import com.example.wildwaste.ui.theme.WildWasteTheme
 import com.example.wildwaste.viewmodels.AuthViewModel
+import com.example.wildwaste.viewmodels.ThemeViewModel
 
 // --- Bottom Navigation Data Class ---
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
@@ -47,10 +48,10 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 fun MainScreen(
     userId: Int,
     username: String,
-    authViewModel: AuthViewModel, // CHANGE 1: Accept the ViewModel
-    appNavController: NavHostController // CHANGE 2: Accept the main NavController
+    authViewModel: AuthViewModel,
+    appNavController: NavHostController,
+    themeViewModel: ThemeViewModel // CHANGE 1: Accept the ThemeViewModel
 ) {
-    // This NavController is for the bottom bar navigation (Map, History, Account)
     val bottomBarNavController = rememberNavController()
     val bottomNavItems = listOf(BottomNavItem.Map, BottomNavItem.History, BottomNavItem.Account)
 
@@ -101,28 +102,21 @@ fun MainScreen(
         }
     ) { innerPadding ->
         NavHost(
-            navController = bottomBarNavController, // Use the dedicated bottom bar controller
+            navController = bottomBarNavController,
             startDestination = BottomNavItem.Map.route,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(BottomNavItem.Map.route) { MapScreen(userId = userId) }
             composable(BottomNavItem.History.route) { HistoryScreen(userId = userId) }
             composable(BottomNavItem.Account.route) {
-                // CHANGE 3: Provide the onLogoutClicked lambda
                 AccountScreen(
                     userId = userId,
                     username = username,
+                    themeViewModel = themeViewModel, // CHANGE 2: Pass ThemeViewModel down to AccountScreen
                     onLogoutClicked = {
-                        // Call a method on your ViewModel to clear user session/state
                         authViewModel.logout()
-
-                        // Use the main NavController to navigate back to the login screen
                         appNavController.navigate("login") {
-                            // Pop the entire back stack up to the start destination
-                            popUpTo(0) {
-                                inclusive = true
-                            }
-                            // Avoid multiple copies of login screen
+                            popUpTo(0) { inclusive = true }
                             launchSingleTop = true
                         }
                     }
@@ -136,15 +130,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WildWasteTheme {
-                AppNavigation()
+            // CHANGE 3: Instantiate the ThemeViewModel at the top level
+            val themeViewModel: ThemeViewModel = viewModel()
+            // CHANGE 4: Wrap the entire app in WildWasteTheme, providing the dark mode state
+            WildWasteTheme(darkTheme = themeViewModel.isDarkMode.value) {
+                AppNavigation(themeViewModel = themeViewModel)
             }
         }
     }
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(themeViewModel: ThemeViewModel) { // CHANGE 5: Accept the ThemeViewModel
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
 
@@ -182,12 +179,13 @@ fun AppNavigation() {
             val username = backStackEntry.arguments?.getString("username")
 
             if (userId != null && username != null) {
-                // CHANGE 4: Pass the main NavController and ViewModel down to MainScreen
+                // CHANGE 6: Pass all necessary ViewModels and NavController to MainScreen
                 MainScreen(
                     userId = userId,
                     username = username,
                     authViewModel = authViewModel,
-                    appNavController = navController
+                    appNavController = navController,
+                    themeViewModel = themeViewModel
                 )
             } else {
                 navController.popBackStack()
