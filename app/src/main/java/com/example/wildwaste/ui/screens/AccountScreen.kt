@@ -55,7 +55,6 @@ fun AccountScreen(
 ) {
     val user = remember(userId, username) { getUpdatedUser(userId, username) }
     var showLogoutDialog by remember { mutableStateOf(false) }
-
     val isDarkMode by themeViewModel.isDarkMode
 
     if (showLogoutDialog) {
@@ -64,9 +63,7 @@ fun AccountScreen(
                 showLogoutDialog = false
                 onLogoutClicked()
             },
-            onDismiss = {
-                showLogoutDialog = false
-            }
+            onDismiss = { showLogoutDialog = false }
         )
     }
 
@@ -76,6 +73,7 @@ fun AccountScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            // PERUBAHAN UTAMA ADA DI PROFILE HEADER
             ProfileHeader(user = user)
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -94,9 +92,7 @@ fun AccountScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
             SectionTitle(title = "Appearance")
-
             SettingSwitchItem(
-                // ERROR 2 FIX: Use Icons.Filled for DarkMode
                 icon = Icons.Filled.DarkMode,
                 title = "Dark Mode",
                 isChecked = isDarkMode,
@@ -107,10 +103,55 @@ fun AccountScreen(
 }
 
 @Composable
-fun LogoutConfirmationDialog(
-    onConfirmLogout: () -> Unit,
-    onDismiss: () -> Unit
-) {
+fun ProfileHeader(user: User) {
+    // 1. Gunakan Box untuk menumpuk gambar latar belakang dan konten
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(250.dp), // Beri ketinggian yang tetap untuk header
+        contentAlignment = Alignment.Center
+    ) {
+        // 2. Gambar doodle sebagai latar belakang
+        Image(
+            painter = painterResource(id = R.drawable.doodle_background), // Ganti dengan gambar Anda
+            contentDescription = "Doodle background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop // Memastikan gambar menutupi seluruh area
+        )
+
+        // 3. Konten profil (avatar, nama, dll.) di atas gambar
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(id = user.avatarResId),
+                contentDescription = "User Avatar",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = user.name,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface // Gunakan warna yang kontras
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Member since ${user.memberSince}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // Sedikit transparan
+            )
+        }
+    }
+}
+
+// Composable lainnya tetap sama
+@Composable
+fun LogoutConfirmationDialog(onConfirmLogout: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Confirm Logout") },
@@ -119,50 +160,12 @@ fun LogoutConfirmationDialog(
             Button(
                 onClick = onConfirmLogout,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-            ) {
-                Text("Logout")
-            }
+            ) { Text("Logout") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         }
     )
-}
-
-
-@Composable
-fun ProfileHeader(user: User) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Image(
-            painter = painterResource(id = user.avatarResId),
-            contentDescription = "User Avatar",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = user.name,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Member since ${user.memberSince}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
-        )
-    }
 }
 
 @Composable
@@ -176,12 +179,7 @@ fun SectionTitle(title: String) {
 }
 
 @Composable
-fun AccountOptionItem(
-    icon: ImageVector,
-    title: String,
-    isLogout: Boolean = false,
-    onClick: () -> Unit
-) {
+fun AccountOptionItem(icon: ImageVector, title: String, isLogout: Boolean = false, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -211,12 +209,7 @@ fun AccountOptionItem(
 }
 
 @Composable
-fun SettingSwitchItem(
-    icon: ImageVector,
-    title: String,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
+fun SettingSwitchItem(icon: ImageVector, title: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -243,15 +236,13 @@ fun SettingSwitchItem(
     Divider(modifier = Modifier.padding(start = 56.dp))
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun AccountScreenPreview() {
-    // ERROR 1 FIX: Use viewModel() to get a ViewModel instance for the preview
     val themeViewModel: ThemeViewModel = viewModel()
     AccountScreen(
         userId = 123,
-        username = "Rizky Pratama",
+        username = "jeremi",
         themeViewModel = themeViewModel,
         onLogoutClicked = {}
     )
