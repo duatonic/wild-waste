@@ -174,7 +174,8 @@ fun MapScreen(
 
         // --- Bottom Sheet for showing report DETAILS ---
         selectedReport?.let { report ->
-            ModalBottomSheet(onDismissRequest = { selectedReport = null }) {
+            val modalPointDetailsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            ModalBottomSheet(onDismissRequest = { selectedReport = null }, sheetState = modalPointDetailsSheetState) {
                 ReportDetailsSheet(report = report)
             }
         }

@@ -55,13 +55,12 @@ fun MainScreen(
     val bottomBarNavController = rememberNavController()
     val bottomNavItems = listOf(BottomNavItem.Map, BottomNavItem.History, BottomNavItem.Account)
 
-    // --- PERUBAHAN DI SINI ---
     // Menerapkan gradien tiga warna yang sama seperti di halaman login
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF2D6A44), // Hijau paling gelap
-            Color(0xFF4B8E5A), // Hijau pertengahan
-            Color(0xFF5CA46C)  // Hijau paling terang
+            Color(0xFF2D6A44),
+            Color(0xFF4B8E5A),
+            Color(0xFF5CA46C)
         )
     )
 

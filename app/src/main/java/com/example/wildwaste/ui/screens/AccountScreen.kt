@@ -78,11 +78,11 @@ fun AccountScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             SectionTitle(title = "Account")
-            AccountOptionItem(
-                icon = Icons.Default.Edit,
-                title = "Edit Profile",
-                onClick = { /* TODO: Navigate to Edit Profile screen */ }
-            )
+//            AccountOptionItem(
+//                icon = Icons.Default.Edit,
+//                title = "Edit Profile",
+//                onClick = { /* TODO: Navigate to Edit Profile screen */ }
+//            )
             AccountOptionItem(
                 icon = Icons.AutoMirrored.Filled.ExitToApp,
                 title = "Logout",

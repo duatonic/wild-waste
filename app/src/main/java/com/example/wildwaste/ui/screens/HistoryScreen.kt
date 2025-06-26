@@ -137,7 +137,8 @@ fun HistoryScreen(
     }
 
     selectedReport?.let { report ->
-        ModalBottomSheet(onDismissRequest = { selectedReport = null }) {
+        val modalBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(onDismissRequest = { selectedReport = null }, sheetState = modalBottomSheetState) {
             ReportDetailsSheet(
                 report = report,
                 onDelete = {

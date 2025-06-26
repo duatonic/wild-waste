@@ -7,5 +7,6 @@
         computer's localhost when running in the Android Emulator.
         -->
         <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">10.125.170.92</domain>
     </domain-config>
 </network-security-config>
